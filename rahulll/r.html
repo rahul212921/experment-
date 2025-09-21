@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Very Very Crazy — Run to Amaze</title>
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --neon:#00ffd5;
+    --accent:#ff3d81;
+    --glass: rgba(255,255,255,0.06);
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(160deg,#02030a 0%,var(--bg) 60%);font-family:Inter,system-ui,Arial}
+  canvas{position:fixed;inset:0;z-index:0;display:block}
+  .ui{
+    position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:36px;color:#e6f7ff;text-align:center;
+  }
+  h1{
+    font-size:clamp(28px,6vw,72px);line-height:0.92;margin:0;padding:8px 16px;
+    background:linear-gradient(90deg,var(--neon),#7b61ff,var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 8px 24px rgba(0,0,0,0.6));
+    letter-spacing:-1px;font-weight:800;
+    transform-origin:center;
+    animation: floaty 6s ease-in-out infinite;
+  }
+  @keyframes floaty{0%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(2deg)}100%{transform:translateY(0) rotate(-1deg)}}
+  .subtitle{font-size:clamp(12px,2.2vw,18px);opacity:0.9}
+  .card{
+    display:flex;gap:16px;align-items:center;padding:12px 18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow:0 6px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    backdrop-filter: blur(6px);
+  }
+  .btn{
+    padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;background:linear-gradient(90deg,#071026, rgba(255,255,255,0.02));
+    color:#dff;font-weight:700;letter-spacing:0.6px;
+  }
+  .glow{
+    position:relative;padding:18px;border-radius:12px;margin-top:8px;
+  }
+  .glow::before{
+    content:"";position:absolute;inset:-2px;background:conic-gradient(from 30deg, #00ffd5, #7b61ff, #ff3d81, #00ffd5);z-index:-1;border-radius:12px;filter:blur(18px);opacity:0.9;
+  }
+  .stage{width:160px;height:160px;perspective:900px}
+  .cube{
+    width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 9s linear infinite;
+  }
+  .cube>div{
+    position:absolute;inset:0;border-radius:12px;background:var(--glass);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    backdrop-filter: blur(6px);
+  }
+  .cube>div img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .f1{transform:translateZ(80px)}
+  .f2{transform:rotateY(180deg) translateZ(80px)}
+  .f3{transform:rotateY(90deg) translateZ(80px)}
+  .f4{transform:rotateY(-90deg) translateZ(80px)}
+  .f5{transform:rotateX(90deg) translateZ(80px)}
+  .f6{transform:rotateX(-90deg) translateZ(80px)}
+  @keyframes spin{0%{transform:rotateX(0) rotateY(0)}100%{transform:rotateX(360deg) rotateY(360deg)}}
+  .type{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;font-size:14px;background:rgba(0,0,0,0.25);padding:10px 12px;border-radius:8px}
+  .cursor{display:inline-block;width:10px;height:18px;background:linear-gradient(180deg,var(--neon),#7b61ff);margin-left:6px;animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  footer{position:fixed;left:12px;bottom:12px;color:rgba(255,255,255,0.45);font-size:12px}
+  @media (max-width:520px){
+    .card{flex-direction:column;align-items:stretch}
+    .stage{width:120px;height:120px}
+  }
+</style>
+</head>
+<body>
+<canvas id="field"></canvas>
+
+<div class="ui">
+  <h1 id="title">Very. Very. Crazy.</h1>
+  <div class="subtitle">Move your mouse. Click. Watch particles, neon pulse, cube spin, and fireworks ignite.</div>
+
+  <div class="card">
+    <div class="stage" title="3D cube">
+      <div class="cube" id="cube">
+        <div class="f1"><img src="me.png" alt="face 1"></div>
+        <div class="f2"><img src="me.png" alt="face 2"></div>
+        <div class="f3"><img src="me.png" alt="face 3"></div>
+        <div class="f4"><img src="me.png" alt="face 4"></div>
+        <div class="f5"><img src="me.png" alt="face 5"></div>
+        <div class="f6"><img src="me.png" alt="face 6"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px">
+      <div class="glow">
+        <div class="type" id="typebox">Initializing...<span class="cursor"></span></div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="regen">Regenerate</button>
+        <button class="btn" id="toggleTrail">Toggle Trail</button>
+        <button class="btn" id="burst">Fireworks</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Tip: right-click the page to inspect. Performance scales with device.</footer>
+
+<script>
+/* particle field and effects */
+const canvas = document.getElementById('field');
+const ctx = canvas.getContext('2d', {alpha:true});
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
+const particles = [];
+const opts = {count: Math.round((W*H)/7000),maxV:1.8,baseSize:1.2,linkDist:140,trail:true};
+let mouse = {x:W/2,y:H/2,down:false};
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;opts.count = Math.round((W*H)/7000)}
+addEventListener('resize', resize);
+class P{constructor(x,y){this.x=x;this.y=y;this.vx=(Math.random()-0.5)*opts.maxV*2;this.vy=(Math.random()-0.5)*opts.maxV*2;this.r=(Math.random()*1.8 + opts.baseSize);this.h=Math.random()*360;}
+update(){const dx=mouse.x-this.x,dy=mouse.y-this.y,d=Math.sqrt(dx*dx+dy*dy)+0.0001,f=Math.min(120,Math.max(-80,(120-d)))/220;this.vx+=dx/d*0.06*f;this.vy+=dy/d*0.06*f;this.vx*=0.985;this.vy*=0.985;this.x+=this.vx;this.y+=this.vy;if(this.x<-40)this.x=W+40;if(this.x>W+40)this.x=-40;if(this.y<-40)this.y=H+40;if(this.y>H+40)this.y=-40;}
+draw(){ctx.beginPath();ctx.fillStyle=`hsla(${this.h},90%,62%,0.95)`;ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();}}
+function seed(){particles.length=0;for(let i=0;i<opts.count;i++){particles.push(new P(Math.random()*W, Math.random()*H));}}
+seed();
+function frame(){if(opts.trail){ctx.fillStyle='rgba(6,10,18,0.15)';ctx.fillRect(0,0,W,H);}else{ctx.clearRect(0,0,W,H);}
+for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const a=particles[i],b=particles[j];const dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;if(d2<opts.linkDist*opts.linkDist){const alpha=0.12*(1-Math.sqrt(d2)/(opts.linkDist));ctx.strokeStyle=`hsla(${(a.h+b.h)/2},80%,60%,${alpha})`;ctx.lineWidth=0.9;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}}
+for(let p of particles){p.update();p.draw();}
+requestAnimationFrame(frame);}
+frame();
+addEventListener('mousemove', e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+addEventListener('pointerdown', e=>{mouse.down=true;mouse.x=e.clientX;mouse.y=e.clientY; spawnBurst(e.clientX,e.clientY) });
+addEventListener('pointerup', ()=>{mouse.down=false});
+document.getElementById('regen').onclick=()=>{seed();flashTitle();};
+document.getElementById('toggleTrail').onclick=()=>{opts.trail=!opts.trail;document.getElementById('toggleTrail').textContent=opts.trail?'Toggle Trail':'Toggle Trail (off)';};
+document.getElementById('burst').onclick=()=> spawnFireworks(W/2, H/2);
+const lines=["System boot ✔","Particles online ✔","Neon shaders enabled ✔","3D cube initialized ✔","Fireworks armed ✔","You are witnessing chaos in style"];
+let li=0,ci=0;const tb=document.getElementById('typebox');
+function typeOnce(){if(li>=lines.length)return;const full=lines[li];if(ci<=full.length){tb.innerHTML=full.slice(0,ci)+'<span class="cursor"></span>';ci++;setTimeout(typeOnce,50+Math.random()*80);}else{ci=0;li++;setTimeout(typeOnce,700);}}
+typeOnce();
+function flashTitle(){const t=document.getElementById('title');t.style.transform='scale(1.06) rotate(-1deg)';setTimeout(()=> t.style.transform='',420);}
+function spawnBurst(x,y){const count=18+Math.round(Math.random()*28);for(let i=0;i<count;i++){spawnParticle(x,y,true);}}
+function spawnParticle(x,y,burst=false){const p=new P(x+(Math.random()-0.5)*12,y+(Math.random()-0.5)*12);const angle=Math.random()*Math.PI*2;const speed=(burst?(2+Math.random()*6):(0.5+Math.random()*1.6));p.vx=Math.cos(angle)*speed;p.vy=Math.sin(angle)*speed;p.r=2+Math.random()*3;p.h=Math.random()*360;particles.push(p);if(particles.length>Math.round(opts.count*2.6))particles.splice(0,particles.length-Math.round(opts.count*1.2));}
+function spawnFireworks(cx,cy){const rings=5;for(let r=0;r<rings;r++){setTimeout(()=>{const pieces=36+Math.round(Math.random()*48);for(let i=0;i<pieces;i++){spawnParticle(cx,cy,true);}flashTitle();},r*120);}}
+let idleTick=0;setInterval(()=>{idleTick++;mouse.x=W/2+Math.sin(idleTick/150)*Math.min(380,W*0.18);mouse.y=H/2+Math.cos(idleTick/130)*Math.min(220,H*0.12);},120);
+setInterval(()=>{if(particles.length>opts.count*1.5)particles.splice(0,particles.length-Math.round(opts.count*1.1));},3000);
+const cube=document.getElementById('cube');
+addEventListener('mousemove', e=>{const rx=(e.clientY-H/2)/H*24;const ry=(e.clientX-W/2)/W*-36;cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;});
+addEventListener('keydown', e=>{if(e.code==='Space'){e.preventDefault();spawnFireworks(Math.random()*W,Math.random()*H);flashTitle();}});
+setTimeout(()=>{spawnFireworks(W/2,H/2);},700);
+</script>
+</body>
+</html>
+
